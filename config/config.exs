@@ -15,6 +15,10 @@ config :hatch,
 config :hatch, HatchWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
+  render_errors: [
+    formats: [json: HatchWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Hatch.PubSub,
   live_view: [signing_salt: "k50sIXt9"]
 

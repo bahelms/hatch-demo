@@ -19,4 +19,5 @@ defmodule HatchWeb.FallbackController do
     |> put_view(json: HatchWeb.ErrorJSON)
     |> render(:not_found)
   end
-end 
+end
+
