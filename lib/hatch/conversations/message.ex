@@ -3,6 +3,8 @@ defmodule Hatch.Conversations.Message do
   import Ecto.Changeset
   alias Hatch.Conversations.Conversation
 
+  @derive {Jason.Encoder, only: [:from, :to, :type, :body, :attachments, :timestamp]}
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "messages" do

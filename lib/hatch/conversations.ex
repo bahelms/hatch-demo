@@ -1,6 +1,6 @@
 defmodule Hatch.Conversations do
   import Ecto.Query, warn: false
-  alias Hatch.Repo
+  alias Hatch.{HTTPClient, Repo}
   alias Hatch.Conversations.{Participant, Message, Conversation}
 
   def add_message(msg_attrs) do
@@ -73,7 +73,15 @@ defmodule Hatch.Conversations do
     |> Repo.insert()
   end
 
-  defp send_message(msg) do
-    msg
+  def send_message({:ok, %{type: nil} = msg}) do
+    # This should probably be async
+    Hatch.EmailProvider.send(msg)
+    {:ok, msg}
+  end
+
+  def send_message({:ok, %{type: type} = msg}) when type in ["sms", "mms"] do
+    # This should probably be async
+    Hatch.PhoneProvider.send(msg)
+    {:ok, msg}
   end
 end
