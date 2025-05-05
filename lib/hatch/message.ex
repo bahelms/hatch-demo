@@ -13,13 +13,16 @@ defmodule Hatch.Message do
     field :messaging_provider_id, :string
     field :timestamp, :utc_datetime
 
+    belongs_to :conversation, Hatch.Conversation
+
     timestamps(type: :utc_datetime)
   end
 
   @doc false
   def changeset(message, attrs) do
     message
-    |> cast(attrs, [:from, :to, :type, :body, :attachments, :timestamp])
-    |> validate_required([:from, :to, :body, :timestamp])
+    |> cast(attrs, [:from, :to, :type, :body, :attachments, :timestamp, :conversation_id])
+    |> validate_required([:from, :to, :body, :timestamp, :conversation_id])
+    |> foreign_key_constraint(:conversation_id)
   end
 end
