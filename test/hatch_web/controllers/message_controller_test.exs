@@ -13,10 +13,19 @@ defmodule HatchWeb.MessageControllerTest do
   }
 
   describe "create message" do
-    test "creates participants if they don't exist", %{conn: conn} do
+    test "creates participants by phone number if they don't exist", %{conn: conn} do
       post(conn, ~p"/api/messages", message: @valid_attrs)
       assert Repo.get_by(Participant, phone_number: @valid_attrs["from"])
       assert Repo.get_by(Participant, phone_number: @valid_attrs["to"])
+    end
+
+    test "creates participants by email if they don't exist", %{conn: conn} do
+      email_attrs =
+        Map.merge(@valid_attrs, %{"type" => "email", "from" => "a@b.com", "to" => "c@d.com"})
+
+      post(conn, ~p"/api/messages", message: email_attrs)
+      assert Repo.get_by(Participant, email: email_attrs["from"])
+      assert Repo.get_by(Participant, email: email_attrs["to"])
     end
 
     test "creates conversation if it doesn't exist", %{conn: conn} do
