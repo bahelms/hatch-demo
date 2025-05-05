@@ -23,28 +23,29 @@ defmodule Hatch.Conversations do
     Map.update(attrs, "type", nil, &String.downcase/1)
   end
 
-  defp load_participants(%{"from" => from_email, "to" => to_email, "type" => "email"}) do
-    from(p in Participant, where: p.email == ^from_email or p.email == ^to_email)
-    |> Repo.all()
-    |> maybe_create_participants(from_email, to_email, :email)
+  defp load_participants(%{"from" => from, "to" => to, "type" => type}) do
+    [load_participant(from, type), load_participant(to, type)]
   end
 
-  defp load_participants(%{"from" => from_number, "to" => to_number, "type" => type})
-       when type in ["sms", "mms"] do
-    from(p in Participant, where: p.phone_number == ^from_number or p.phone_number == ^to_number)
-    |> Repo.all()
-    |> maybe_create_participants(from_number, to_number, :phone_number)
+  defp load_participant(value, "email") do
+    Participant
+    |> Repo.get_by(email: value)
+    |> maybe_create_participant(:email, value)
   end
 
-  defp maybe_create_participants([], from_number, to_number, field) do
-    [
-      Participant.changeset(%Participant{}, %{field => from_number}),
-      Participant.changeset(%Participant{}, %{field => to_number})
-    ]
-    |> Enum.map(&Repo.insert!(&1, returning: true))
+  defp load_participant(value, type) when type in ["sms", "mms"] do
+    Participant
+    |> Repo.get_by(phone_number: value)
+    |> maybe_create_participant(:phone_number, value)
   end
 
-  defp maybe_create_participants(participants, _from, _to, _field), do: participants
+  defp maybe_create_participant(nil, field, value) do
+    %Participant{}
+    |> Participant.changeset(%{field => value})
+    |> Repo.insert!()
+  end
+
+  defp maybe_create_participant(participant, _field, _value), do: participant
 
   defp load_conversation([%{id: id_one}, %{id: id_two}]) do
     from(c in Conversation,

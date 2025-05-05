@@ -11,7 +11,6 @@ defmodule Hatch.Conversations.Message do
     field :type, :string
     field :body, :string
     field :attachments, {:array, :string}
-    field :messaging_provider_id, :string
     field :timestamp, :utc_datetime
 
     belongs_to :conversation, Conversation

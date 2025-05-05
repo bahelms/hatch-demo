@@ -19,6 +19,12 @@ defmodule HatchWeb.MessageControllerTest do
       assert Repo.get_by(Participant, phone_number: @valid_attrs["to"])
     end
 
+    test "creates one participant if the other exists", %{conn: conn} do
+      create_participant(%{phone_number: @valid_attrs["from"]})
+      post(conn, ~p"/api/messages", message: @valid_attrs)
+      assert Repo.get_by(Participant, phone_number: @valid_attrs["to"])
+    end
+
     test "creates participants by email if they don't exist", %{conn: conn} do
       email_attrs =
         Map.merge(@valid_attrs, %{"type" => "email", "from" => "a@b.com", "to" => "c@d.com"})
@@ -61,6 +67,26 @@ defmodule HatchWeb.MessageControllerTest do
         |> json_response(201)
 
       assert convo_id == convo.id
+    end
+
+    test "conversations can be cross channel", %{conn: conn} do
+      create_participant(%{phone_number: "+1234567890", email: "hey@there.com"})
+      create_participant(%{phone_number: "+0987654321", email: "ahoy@matey.com"})
+
+      conn
+      |> post(~p"/api/messages", message: @valid_attrs)
+      |> post(~p"/api/messages",
+        message:
+          Map.merge(@valid_attrs, %{
+            "from" => "ahoy@matey.com",
+            "to" => "hey@there.com",
+            "type" => "email"
+          })
+      )
+
+      assert Repo.aggregate(Conversation, :count, :id) == 1
+      assert [convo | []] = Conversation |> Repo.all() |> Repo.preload(:messages)
+      assert length(convo.messages) == 2
     end
 
     test "returns error with empty message body", %{conn: conn} do
@@ -116,7 +142,7 @@ defmodule HatchWeb.MessageControllerTest do
   defp create_participant(attrs) do
     %Participant{}
     |> Participant.changeset(attrs)
-    |> Repo.insert!(returning: true)
+    |> Repo.insert!()
   end
 
   defp create_conversation(%{id: one}, %{id: two}) do
