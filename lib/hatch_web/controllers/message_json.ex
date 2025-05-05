@@ -1,9 +1,6 @@
 defmodule HatchWeb.MessageJSON do
-  alias Hatch.Message
+  alias Hatch.Conversations.Message
 
-  @doc """
-  Renders a single message.
-  """
   def show(%{message: message}) do
     %{data: data(message)}
   end
@@ -20,4 +17,3 @@ defmodule HatchWeb.MessageJSON do
     }
   end
 end
-

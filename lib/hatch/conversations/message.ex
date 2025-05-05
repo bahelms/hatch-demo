@@ -1,6 +1,7 @@
-defmodule Hatch.Message do
+defmodule Hatch.Conversations.Message do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Hatch.Conversations.Conversation
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -13,7 +14,7 @@ defmodule Hatch.Message do
     field :messaging_provider_id, :string
     field :timestamp, :utc_datetime
 
-    belongs_to :conversation, Hatch.Conversation
+    belongs_to :conversation, Conversation
 
     timestamps(type: :utc_datetime)
   end
@@ -22,7 +23,7 @@ defmodule Hatch.Message do
   def changeset(message, attrs) do
     message
     |> cast(attrs, [:from, :to, :type, :body, :attachments, :timestamp, :conversation_id])
-    |> validate_required([:from, :to, :body, :timestamp, :conversation_id])
+    |> validate_required([:from, :to, :body, :timestamp])
     |> foreign_key_constraint(:conversation_id)
   end
 end

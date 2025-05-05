@@ -1,8 +1,7 @@
 defmodule HatchWeb.MessageController do
   use HatchWeb, :controller
 
-  alias Hatch.Messages
-  alias Hatch.Message
+  alias Hatch.{Conversations, Conversations.Message}
 
   action_fallback HatchWeb.FallbackController
 
@@ -10,7 +9,7 @@ defmodule HatchWeb.MessageController do
   Creates a message.
   """
   def create(conn, %{"message" => message_params}) do
-    with {:ok, %Message{} = message} <- Messages.create_message(message_params) do
+    with {:ok, %Message{} = message} <- Conversations.add_message(message_params) do
       conn
       |> put_status(:created)
       |> render(:show, message: message)

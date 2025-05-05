@@ -1,5 +1,7 @@
 defmodule HatchWeb.MessageControllerTest do
   use HatchWeb.ConnCase
+  alias Hatch.Repo
+  alias Hatch.Conversations.{Participant, Conversation}
 
   @valid_attrs %{
     "from" => "+1234567890",
@@ -11,6 +13,18 @@ defmodule HatchWeb.MessageControllerTest do
   }
 
   describe "create message" do
+    test "creates participants if they don't exist", %{conn: conn} do
+      post(conn, ~p"/api/messages", message: @valid_attrs)
+      assert Repo.get_by(Participant, phone_number: @valid_attrs["from"])
+      assert Repo.get_by(Participant, phone_number: @valid_attrs["to"])
+    end
+
+    test "creates conversation if it doesn't exist", %{conn: conn} do
+      post(conn, ~p"/api/messages", message: @valid_attrs)
+      assert convo = Repo.one(Conversation) |> Repo.preload(:participant_one)
+      assert convo.participant_one.phone_number == @valid_attrs["from"]
+    end
+
     test "creates message with valid data", %{conn: conn} do
       conn = post(conn, ~p"/api/messages", message: @valid_attrs)
 
@@ -25,6 +39,9 @@ defmodule HatchWeb.MessageControllerTest do
                  "timestamp" => "2024-11-01T14:00:00Z"
                }
              } = json_response(conn, 201)
+    end
+
+    test "message is added to existing conversation" do
     end
 
     test "returns error with empty message body", %{conn: conn} do
@@ -59,6 +76,21 @@ defmodule HatchWeb.MessageControllerTest do
                  "timestamp" => ["can't be blank"]
                }
              } = json_response(conn, 422)
+    end
+  end
+
+  describe "sms message" do
+    test "message is sent to the appropriate provider" do
+    end
+  end
+
+  describe "mms message" do
+    test "message is sent to the appropriate provider" do
+    end
+  end
+
+  describe "email message" do
+    test "message is sent to the appropriate provider" do
     end
   end
 end
