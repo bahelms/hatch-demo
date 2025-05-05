@@ -13,6 +13,7 @@ defmodule HatchWeb.MessageJSON do
       type: message.type,
       body: message.body,
       attachments: message.attachments,
+      conversation_id: message.conversation_id,
       timestamp: message.timestamp
     }
   end

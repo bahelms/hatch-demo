@@ -41,7 +41,17 @@ defmodule HatchWeb.MessageControllerTest do
              } = json_response(conn, 201)
     end
 
-    test "message is added to existing conversation" do
+    test "message is added to existing conversation", %{conn: conn} do
+      one = create_participant(%{phone_number: @valid_attrs["from"]})
+      two = create_participant(%{phone_number: @valid_attrs["to"]})
+      convo = create_conversation(one, two)
+
+      %{"data" => %{"conversation_id" => convo_id}} =
+        conn
+        |> post(~p"/api/messages", message: @valid_attrs)
+        |> json_response(201)
+
+      assert convo_id == convo.id
     end
 
     test "returns error with empty message body", %{conn: conn} do
@@ -92,6 +102,18 @@ defmodule HatchWeb.MessageControllerTest do
   describe "email message" do
     test "message is sent to the appropriate provider" do
     end
+  end
+
+  defp create_participant(attrs) do
+    %Participant{}
+    |> Participant.changeset(attrs)
+    |> Repo.insert!(returning: true)
+  end
+
+  defp create_conversation(%{id: one}, %{id: two}) do
+    %Conversation{}
+    |> Conversation.changeset(%{participant_one_id: one, participant_two_id: two})
+    |> Repo.insert!()
   end
 end
 
