@@ -1,5 +1,12 @@
 defmodule Hatch.PhoneProvider do
+  @moduledoc """
+  Phone provider API related things
+  """
+
+  @behaviour Hatch.Providers.ProviderBehaviour
+
   def send(msg) do
+    # this provider could be supervised and failures retried
     Req.post!(url(), json: msg)
   end
 
