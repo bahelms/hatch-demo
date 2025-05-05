@@ -27,7 +27,9 @@ defmodule HatchWeb.MessageControllerTest do
 
     test "creates participants by email if they don't exist", %{conn: conn} do
       email_attrs =
-        Map.merge(@valid_attrs, %{"type" => "email", "from" => "a@b.com", "to" => "c@d.com"})
+        @valid_attrs
+        |> Map.merge(%{"from" => "a@b.com", "to" => "c@d.com"})
+        |> Map.delete("type")
 
       post(conn, ~p"/api/messages", message: email_attrs)
       assert Repo.get_by(Participant, email: email_attrs["from"])
@@ -77,11 +79,12 @@ defmodule HatchWeb.MessageControllerTest do
       |> post(~p"/api/messages", message: @valid_attrs)
       |> post(~p"/api/messages",
         message:
-          Map.merge(@valid_attrs, %{
+          @valid_attrs
+          |> Map.merge(%{
             "from" => "ahoy@matey.com",
-            "to" => "hey@there.com",
-            "type" => "email"
+            "to" => "hey@there.com"
           })
+          |> Map.delete("type")
       )
 
       assert Repo.aggregate(Conversation, :count, :id) == 1

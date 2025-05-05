@@ -27,7 +27,7 @@ defmodule Hatch.Conversations do
     [load_participant(from, type), load_participant(to, type)]
   end
 
-  defp load_participant(value, "email") do
+  defp load_participant(value, nil) do
     Participant
     |> Repo.get_by(email: value)
     |> maybe_create_participant(:email, value)
